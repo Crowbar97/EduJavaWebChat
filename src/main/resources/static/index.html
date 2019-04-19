@@ -2,20 +2,26 @@
 <html>
   <head>
       <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-      <title>Spring Boot WebSocket Chat Application | CalliCoder</title>
+      <title>TeleChat</title>
       <link rel="stylesheet" href="/css/main.css" />
   </head>
   <body>
     <noscript>
-      <h2>Sorry! Your browser doesn't support Javascript</h2>
+      <h2>Your browser doesn't support Javascript!</h2>
     </noscript>
 
     <div id="username-page">
         <div class="username-page-container">
-            <h1 class="title">Type your username</h1>
+            <h1 class="title">Who are you <br> and What do you want?</h1>
             <form id="usernameForm" name="usernameForm">
                 <div class="form-group">
-                    <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
+                    <input type="text" id="name" placeholder="Your name" autocomplete="off" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <!--<input type="text" id="topic" placeholder="Topic" autocomplete="off" class="form-control" />-->
+                    <input type="text" id="topic" placeholder="Topic" autocomplete="off" class="form-control" list="topics" />
+                    <datalist id="topics">
+                    </datalist>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="accent username-submit">Start Chatting</button>
@@ -27,7 +33,7 @@
     <div id="chat-page" class="hidden">
         <div class="chat-container">
             <div class="chat-header">
-                <h2>Spring WebSocket Chat Demo</h2>
+                <h2 class="topic-title">TeleChat topic title</h2>
             </div>
             <div class="connecting">
                 Connecting...

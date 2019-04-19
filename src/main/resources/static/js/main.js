@@ -4,24 +4,47 @@ var usernamePage = document.querySelector('#username-page');
 var chatPage = document.querySelector('#chat-page');
 var usernameForm = document.querySelector('#usernameForm');
 var messageForm = document.querySelector('#messageForm');
+var topicTitle = document.querySelector('.topic-title');
 var messageInput = document.querySelector('#message');
 var messageArea = document.querySelector('#messageArea');
 var connectingElement = document.querySelector('.connecting');
 
 var stompClient = null;
 var username = null;
+var topicname = null;
 
 var colors = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
+function loadTopicSizes() {
+    console.log("Loading topics...");
+    fetch('http://localhost:8080/topic-sizes')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(topics) {
+            console.log(topics);
+            var list = document.getElementById('topics');
+            for (var topic in topics) {
+                var option = document.createElement('option');
+                option.value = topic;
+                list.appendChild(option);
+            }
+        })
+        .catch(alert);
+    console.log("Done!");
+}
+
 function connect(event) {
     username = document.querySelector('#name').value.trim();
+    topicname = document.querySelector('#topic').value.trim();
 
-    if(username) {
+    if(username && topicname) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
+        topicTitle.innerHTML = topicname;
 
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
@@ -31,26 +54,21 @@ function connect(event) {
     event.preventDefault();
 }
 
-
 function onConnected() {
-    // Subscribe to the Public Topic
-    stompClient.subscribe('/topic/public', onMessageReceived);
+    stompClient.subscribe('/topic/' + topicname, onMessageReceived);
 
-    // Tell your username to the server
     stompClient.send("/app/chat.addUser",
         {},
-        JSON.stringify({sender: username, type: 'JOIN'})
-    )
+        JSON.stringify({sender: username, receiver: topicname, type: 'JOIN'})
+    );
 
     connectingElement.classList.add('hidden');
 }
-
 
 function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
     connectingElement.style.color = 'red';
 }
-
 
 function sendMessage(event) {
     var messageContent = messageInput.value.trim();
@@ -58,7 +76,8 @@ function sendMessage(event) {
     if(messageContent && stompClient) {
         var chatMessage = {
             sender: username,
-            content: messageInput.value,
+            receiver: topicname,
+            content: messageContent,
             type: 'CHAT'
         };
 
@@ -67,7 +86,6 @@ function sendMessage(event) {
     }
     event.preventDefault();
 }
-
 
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
@@ -106,7 +124,6 @@ function onMessageReceived(payload) {
     messageArea.scrollTop = messageArea.scrollHeight;
 }
 
-
 function getAvatarColor(messageSender) {
     var hash = 0;
     for (var i = 0; i < messageSender.length; i++) {
@@ -117,5 +134,6 @@ function getAvatarColor(messageSender) {
     return colors[index];
 }
 
-usernameForm.addEventListener('submit', connect, true)
-messageForm.addEventListener('submit', sendMessage, true)
+usernameForm.addEventListener('submit', connect, true);
+messageForm.addEventListener('submit', sendMessage, true);
+loadTopicSizes();
